@@ -61,30 +61,29 @@ void loop() {
   }
   temperature = bme.temperature;
   Serial.print("Temperature = ");
-  Serial.print(bme.temperature);
+  Serial.print(temperature);
   Serial.println(" *C");
 
   pressure = bme.pressure / 100.0;
   Serial.print("Pressure = ");
-  Serial.print(bme.pressure / 100.0);
+  Serial.print(pressure);
   Serial.println(" hPa");
 
   humidity = bme.humidity;
   Serial.print("Humidity = ");
-  Serial.print(bme.humidity);
+  Serial.print(humidity);
   Serial.println(" %");
 
   gas = bme.gas_resistance / 1000.0;
   Serial.print("Gas = ");
-  Serial.print(bme.gas_resistance / 1000.0);
+  Serial.print(gas);
   Serial.println(" KOhms");
 
   altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
   Serial.print("Approx. Altitude = ");
-  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-  Serial.println(" m");
-
-  Serial.println();
+  Serial.print(altitude);
+  Serial.println(" m\n");
+  
   showMessageOnScreen();
   delay(2000);
 }
@@ -93,8 +92,8 @@ void showMessageOnScreen(){
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setCursor(0, 5);
-  u8g2.drawStr(25,10,"Practica de RIS");
-  u8g2.drawStr(25,15,"---------------");
+  u8g2.drawStr(25,8,"Practica de RIS");
+  u8g2.drawStr(25,13,"---------------");
 
   // Temporal variable to convert values to string
   char tempStr[10];
@@ -109,15 +108,15 @@ void showMessageOnScreen(){
   dtostrf(altitude,2,2,altStr);
 
   // Print data
-  u8g2.drawStr(5,25,"Hum:");
-  u8g2.drawStr(38,25,humStr);
-  u8g2.drawStr(5,35,"Temp:");
-  u8g2.drawStr(38,35,tempStr);
-  u8g2.drawStr(5,45,"Gas:");
-  u8g2.drawStr(38,45,gasStr);
-  u8g2.drawStr(5,55,"Pres:");
-  u8g2.drawStr(38,55,presStr);
-  u8g2.drawStr(72,25,"Alt:");
-  u8g2.drawStr(99,25,altStr);
+  u8g2.drawStr(5,22,"Hum:");
+  u8g2.drawStr(38,22,humStr);
+  u8g2.drawStr(5,32,"Temp:");
+  u8g2.drawStr(38,32,tempStr);
+  u8g2.drawStr(5,42,"Gas:");
+  u8g2.drawStr(38,42,gasStr);
+  u8g2.drawStr(5,52,"Pres:");
+  u8g2.drawStr(38,52,presStr);
+  u8g2.drawStr(5,62,"Alt:");
+  u8g2.drawStr(38,62,altStr);
   u8g2.sendBuffer();
 }
