@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <U8g2lib.h>
 #include <Adafruit_Sensor.h>
 #include "Adafruit_BME680.h"
 
+// FOR SPI implementation
 /*
 #define BME_SCK 13
 #define BME_MISO 12
@@ -11,15 +13,27 @@
 #define BME_CS 10
 */
 
-// Presion en Valencia
-#define SEALEVELPRESSURE_HPA (1031)
+// Valencia Air Quality and Pressure: https://www.iqair.com/spain/valencia
+#define SEALEVELPRESSURE_HPA (1033)
 
 Adafruit_BME680 bme; // I2C
 //Adafruit_BME680 bme(BME_CS); // hardware SPI
 //Adafruit_BME680 bme(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 
+// OLED Display
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
+// Functions prototype declaration
+void showMessageOnScreen();
+
+double pressure = 0;
+double temperature = 0;
+double humidity = 0;
+double gas = 0;
+double altitude = 0;
+
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9350);
   while (!Serial);
   Serial.println(F("BME680 test"));
 
@@ -33,7 +47,11 @@ void setup() {
   bme.setHumidityOversampling(BME680_OS_8X);
   bme.setPressureOversampling(BME680_OS_4X);
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-  bme.setGasHeater(320, 150); // 320*C for 150 ms
+  bme.setGasHeater(320, 50); // 320*C for 50 ms
+
+  // OLED
+  u8g2.begin();
+  u8g2.enableUTF8Print();
 }
 
 void loop() {
@@ -41,26 +59,65 @@ void loop() {
     Serial.println("Failed to perform reading :(");
     return;
   }
+  temperature = bme.temperature;
   Serial.print("Temperature = ");
   Serial.print(bme.temperature);
   Serial.println(" *C");
 
+  pressure = bme.pressure / 100.0;
   Serial.print("Pressure = ");
   Serial.print(bme.pressure / 100.0);
   Serial.println(" hPa");
 
+  humidity = bme.humidity;
   Serial.print("Humidity = ");
   Serial.print(bme.humidity);
   Serial.println(" %");
 
+  gas = bme.gas_resistance / 1000.0;
   Serial.print("Gas = ");
   Serial.print(bme.gas_resistance / 1000.0);
   Serial.println(" KOhms");
 
+  altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
   Serial.print("Approx. Altitude = ");
   Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
   Serial.println(" m");
 
   Serial.println();
+  showMessageOnScreen();
   delay(2000);
+}
+
+void showMessageOnScreen(){
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.setCursor(0, 5);
+  u8g2.drawStr(25,10,"Practica de RIS");
+  u8g2.drawStr(25,15,"---------------");
+
+  // Temporal variable to convert values to string
+  char tempStr[10];
+  char presStr[10];
+  char humStr[10];
+  char gasStr[10];
+  char altStr[10];
+  dtostrf(temperature,2,2,tempStr);
+  dtostrf(pressure,2,2,presStr);
+  dtostrf(humidity,2,2,humStr);
+  dtostrf(gas,2,2,gasStr);
+  dtostrf(altitude,2,2,altStr);
+
+  // Print data
+  u8g2.drawStr(5,25,"Hum:");
+  u8g2.drawStr(38,25,humStr);
+  u8g2.drawStr(5,35,"Temp:");
+  u8g2.drawStr(38,35,tempStr);
+  u8g2.drawStr(5,45,"Gas:");
+  u8g2.drawStr(38,45,gasStr);
+  u8g2.drawStr(5,55,"Pres:");
+  u8g2.drawStr(38,55,presStr);
+  u8g2.drawStr(72,25,"Alt:");
+  u8g2.drawStr(99,25,altStr);
+  u8g2.sendBuffer();
 }
